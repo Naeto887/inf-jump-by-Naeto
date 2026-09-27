@@ -1,5 +1,6 @@
 local P=game:GetService("Players").LocalPlayer
 local U=game:GetService("UserInputService")
+
 local G=Instance.new("ScreenGui",P:WaitForChild("PlayerGui"))
 G.Name="InfiniteJumpGUI"
 G.ResetOnSpawn=false
@@ -26,8 +27,8 @@ N.BackgroundTransparency=1
 N.Text="BY NEATO"
 N.TextSize=16
 N.Font=Enum.Font.GothamBlack
-N.TextColor3=Color3.fromRGB(255,255,255)
-N.TextStrokeColor3=Color3.fromRGB(0,0,0)
+N.TextColor3=Color3.new(1,1,1)
+N.TextStrokeColor3=Color3.new(0,0,0)
 N.TextStrokeTransparency=0
 
 local C=Instance.new("UIGradient",N)
@@ -60,38 +61,111 @@ B.TextSize=16
 B.Font=Enum.Font.GothamBold
 Instance.new("UICorner",B).CornerRadius=UDim.new(0,12)
 
+-- ปุ่มเปิด GUI
 local O=Instance.new("TextButton",G)
 O.Size=UDim2.fromOffset(55,55)
-O.Position=UDim2.new(0,15,.5,-27)
+O.Position=UDim2.new(.5,-27.5,.5,-27.5)
 O.BackgroundColor3=Color3.fromRGB(25,25,30)
 O.Text="☰"
 O.TextColor3=Color3.new(1,1,1)
 O.TextSize=25
 O.Font=Enum.Font.GothamBold
 O.Visible=false
+O.AutoButtonColor=false
 Instance.new("UICorner",O).CornerRadius=UDim.new(1,0)
 
 local on=false
 
+-- เปิด/ปิด Infinite Jump
 B.Activated:Connect(function()
 	on=not on
 	B.Text="INFINITE JUMP : "..(on and "ON" or "OFF")
-	B.BackgroundColor3=on and Color3.fromRGB(45,180,90) or Color3.fromRGB(170,45,45)
+	B.BackgroundColor3=on
+		and Color3.fromRGB(45,180,90)
+		or Color3.fromRGB(170,45,45)
 end)
 
+-- ปิด GUI
 X.Activated:Connect(function()
 	F.Visible=false
 	O.Visible=true
 end)
 
-O.Activated:Connect(function()
-	F.Visible=true
-	O.Visible=false
+-- ตัวแปรลาก
+local holding=false
+local dragging=false
+local dragStart
+local startPos
+local holdTime=.15
+local moved=false
+
+-- กดปุ่ม
+O.InputBegan:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1
+	or input.UserInputType==Enum.UserInputType.Touch then
+
+		holding=true
+		dragging=false
+		moved=false
+
+		dragStart=input.Position
+		startPos=O.Position
+
+		task.delay(holdTime,function()
+			if holding and not moved then
+				dragging=true
+			end
+		end)
+	end
 end)
 
+-- ปล่อยปุ่ม
+O.InputEnded:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1
+	or input.UserInputType==Enum.UserInputType.Touch then
+
+		if not dragging and not moved then
+			F.Visible=true
+			O.Visible=false
+		end
+
+		holding=false
+		dragging=false
+	end
+end)
+
+-- ตรวจจับการลาก
+U.InputChanged:Connect(function(input)
+	if not holding then return end
+
+	if input.UserInputType==Enum.UserInputType.MouseMovement
+	or input.UserInputType==Enum.UserInputType.Touch then
+
+		local delta=input.Position-dragStart
+
+		if math.abs(delta.X)>5 or math.abs(delta.Y)>5 then
+			moved=true
+		end
+
+		if dragging then
+			O.Position=UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset+delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset+delta.Y
+			)
+		end
+	end
+end)
+
+-- Infinite Jump
 U.JumpRequest:Connect(function()
 	if on then
-		local H=P.Character and P.Character:FindFirstChildOfClass("Humanoid")
-		if H then H:ChangeState(Enum.HumanoidStateType.Jumping) end
+		local H=P.Character and
+			P.Character:FindFirstChildOfClass("Humanoid")
+
+		if H then
+			H:ChangeState(Enum.HumanoidStateType.Jumping)
+		end
 	end
 end)
