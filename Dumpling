@@ -1,0 +1,251 @@
+--// Naeto Auto Buy GUI
+--// ใส่ LocalScript ใน StarterPlayer > StarterPlayerScripts
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+local Rarities = {
+	"Common",
+	"Uncommon",
+	"Rare",
+	"Epic",
+	"Legendary",
+	"Mythical",
+	"Divine",
+	"Secret",
+	"Celestial",
+	"Transcendent",
+	"Cosmic",
+	"Ancient",
+	"Eternal",
+	"Azure",
+	"Void"
+}
+
+local SelectedRarity = "Common"
+local AutoBuy = false
+
+--==================================================
+-- GUI
+--==================================================
+
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "NaetoAutoBuy"
+Gui.ResetOnSpawn = false
+Gui.Parent = PlayerGui
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 330, 0, 420)
+Main.Position = UDim2.new(0.5, -165, 0.5, -210)
+Main.BackgroundColor3 = Color3.fromRGB(20, 55, 75)
+Main.BorderSizePixel = 0
+Main.Parent = Gui
+
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 18)
+Corner.Parent = Main
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(80, 220, 255)
+Stroke.Thickness = 2
+Stroke.Parent = Main
+
+--==================================================
+-- TITLE
+--==================================================
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -60, 0, 45)
+Title.Position = UDim2.new(0, 20, 0, 5)
+Title.BackgroundTransparency = 1
+Title.Text = "AUTO BUY"
+Title.TextColor3 = Color3.fromRGB(130, 235, 255)
+Title.TextSize = 24
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
+
+local Credit = Instance.new("TextLabel")
+Credit.Size = UDim2.new(1, -60, 0, 22)
+Credit.Position = UDim2.new(0, 20, 0, 37)
+Credit.BackgroundTransparency = 1
+Credit.Text = "by Naeto"
+Credit.TextColor3 = Color3.fromRGB(190, 230, 240)
+Credit.TextSize = 13
+Credit.Font = Enum.Font.Gotham
+Credit.TextXAlignment = Enum.TextXAlignment.Left
+Credit.Parent = Main
+
+--==================================================
+-- CLOSE
+--==================================================
+
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 38, 0, 38)
+Close.Position = UDim2.new(1, -48, 0, 10)
+Close.BackgroundColor3 = Color3.fromRGB(35, 90, 115)
+Close.Text = "×"
+Close.TextColor3 = Color3.new(1,1,1)
+Close.TextSize = 25
+Close.Font = Enum.Font.GothamBold
+Close.Parent = Main
+
+Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 10)
+
+--==================================================
+-- OPEN
+--==================================================
+
+local Open = Instance.new("TextButton")
+Open.Size = UDim2.new(0, 110, 0, 42)
+Open.Position = UDim2.new(0, 15, 0.5, -21)
+Open.BackgroundColor3 = Color3.fromRGB(25, 160, 210)
+Open.Text = "Naeto GUI"
+Open.TextColor3 = Color3.new(1,1,1)
+Open.TextSize = 14
+Open.Font = Enum.Font.GothamBold
+Open.Visible = false
+Open.Parent = Gui
+
+Instance.new("UICorner", Open).CornerRadius = UDim.new(0, 12)
+
+Close.MouseButton1Click:Connect(function()
+	Main.Visible = false
+	Open.Visible = true
+end)
+
+Open.MouseButton1Click:Connect(function()
+	Main.Visible = true
+	Open.Visible = false
+end)
+
+--==================================================
+-- SELECTED RARITY
+--==================================================
+
+local Selected = Instance.new("TextLabel")
+Selected.Size = UDim2.new(1, -40, 0, 40)
+Selected.Position = UDim2.new(0, 20, 0, 70)
+Selected.BackgroundColor3 = Color3.fromRGB(30, 80, 105)
+Selected.Text = "เลือก: Common"
+Selected.TextColor3 = Color3.fromRGB(220, 250, 255)
+Selected.TextSize = 16
+Selected.Font = Enum.Font.GothamBold
+Selected.Parent = Main
+
+Instance.new("UICorner", Selected).CornerRadius = UDim.new(0, 10)
+
+--==================================================
+-- RARITY LIST
+--==================================================
+
+local List = Instance.new("ScrollingFrame")
+List.Size = UDim2.new(1, -40, 0, 210)
+List.Position = UDim2.new(0, 20, 0, 120)
+List.BackgroundColor3 = Color3.fromRGB(15, 40, 55)
+List.BorderSizePixel = 0
+List.ScrollBarThickness = 5
+List.CanvasSize = UDim2.new(0,0,0,0)
+List.Parent = Main
+
+Instance.new("UICorner", List).CornerRadius = UDim.new(0, 12)
+
+local Layout = Instance.new("UIListLayout")
+Layout.Padding = UDim.new(0, 5)
+Layout.Parent = List
+
+for i, rarity in ipairs(Rarities) do
+
+	local Button = Instance.new("TextButton")
+	Button.Size = UDim2.new(1, -10, 0, 32)
+	Button.BackgroundColor3 = Color3.fromRGB(35, 75, 95)
+	Button.Text = rarity
+	Button.TextColor3 = Color3.fromRGB(220, 250, 255)
+	Button.TextSize = 14
+	Button.Font = Enum.Font.GothamBold
+	Button.Parent = List
+
+	Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 8)
+
+	Button.MouseButton1Click:Connect(function()
+		SelectedRarity = rarity
+		Selected.Text = "เลือก: " .. rarity
+	end)
+end
+
+task.wait()
+List.CanvasSize = UDim2.new(
+	0,
+	0,
+	0,
+	Layout.AbsoluteContentSize.Y + 10
+)
+
+--==================================================
+-- AUTO BUY
+--==================================================
+
+local Toggle = Instance.new("TextButton")
+Toggle.Size = UDim2.new(1, -40, 0, 45)
+Toggle.Position = UDim2.new(0, 20, 1, -60)
+Toggle.BackgroundColor3 = Color3.fromRGB(35, 75, 95)
+Toggle.Text = "AUTO BUY : OFF"
+Toggle.TextColor3 = Color3.fromRGB(220, 250, 255)
+Toggle.TextSize = 16
+Toggle.Font = Enum.Font.GothamBold
+Toggle.Parent = Main
+
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 12)
+
+Toggle.MouseButton1Click:Connect(function()
+
+	AutoBuy = not AutoBuy
+
+	if AutoBuy then
+		Toggle.Text = "AUTO BUY : ON"
+		Toggle.BackgroundColor3 = Color3.fromRGB(20, 170, 210)
+	else
+		Toggle.Text = "AUTO BUY : OFF"
+		Toggle.BackgroundColor3 = Color3.fromRGB(35, 75, 95)
+	end
+
+end)
+
+--==================================================
+-- FUNCTION
+--==================================================
+
+local function GetRarityIndex(rarity)
+	for i, v in ipairs(Rarities) do
+		if v == rarity then
+			return i
+		end
+	end
+
+	return nil
+end
+
+--==================================================
+-- AUTO BUY LOGIC
+--==================================================
+-- ระบบนี้เป็นโครงสำหรับเชื่อมกับระบบ Spawn Case
+-- ต้องเชื่อมกับระบบซื้อของเกมจริงของคุณ
+
+local function ShouldBuy(rarity)
+
+	local selectedIndex = GetRarityIndex(SelectedRarity)
+	local caseIndex = GetRarityIndex(rarity)
+
+	if not selectedIndex or not caseIndex then
+		return false
+	end
+
+	-- ซื้อระดับที่เลือกและระดับที่สูงกว่าจนถึง Void
+	return caseIndex >= selectedIndex
+end
+
+-- ตัวอย่าง:
+print("เลือก:", SelectedRarity)
+print("Epic:", ShouldBuy("Epic"))
+print("Void:", ShouldBuy("Void"))
