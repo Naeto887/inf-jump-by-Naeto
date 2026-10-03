@@ -1,381 +1,432 @@
---// Naeto GUI
---// LocalScript สำหรับ Roblox Studio
+--// Naeto Auto Buy + Auto Spawn Case
+--// สำหรับ Roblox Studio เกมของคุณเอง
 --// StarterPlayer > StarterPlayerScripts
 
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+
+--========================
+-- SETTINGS
+--========================
 
 local Rarities = {
-	"Common",
-	"Uncommon",
-	"Rare",
-	"Epic",
-	"Legendary",
-	"Mythical",
-	"Divine",
-	"Secret",
-	"Celestial",
-	"Transcendent",
-	"Cosmic",
-	"Ancient",
-	"Eternal",
-	"Azure",
-	"Void"
+    "Azure",
+    "Void"
 }
 
-local SelectedRarity = "Common"
-local AutoBuy = false
-local Minimized = false
+local Cases = {
+    ["Cupid Case"] = {
+        Rarity = "Azure",
+        Price = 225e21
+    },
 
---==================================================
+    ["Seraphim Case"] = {
+        Rarity = "Azure",
+        Price = 1.5e24
+    },
+
+    ["Knight Case"] = {
+        Rarity = "Void",
+        Price = 3e24
+    },
+
+    ["King Case"] = {
+        Rarity = "Void",
+        Price = 20e24
+    }
+}
+
+local SelectedRarity = "Azure"
+local AutoBuy = false
+local AutoSpawnCase = false
+
+--========================
+-- REMOTES
+--========================
+
+local SpawnCase = ReplicatedStorage:FindFirstChild("SpawnCase")
+local BuyCase = ReplicatedStorage:FindFirstChild("BuyCase")
+
+--========================
 -- GUI
---==================================================
+--========================
 
 local Gui = Instance.new("ScreenGui")
 Gui.Name = "NaetoAutoBuy"
 Gui.ResetOnSpawn = false
-Gui.IgnoreGuiInset = true
-Gui.Parent = PlayerGui
+Gui.Parent = Player:WaitForChild("PlayerGui")
 
---==================================================
--- MAIN
---==================================================
-
+-- Main
 local Main = Instance.new("Frame")
-Main.Name = "Main"
-Main.Size = UDim2.new(0, 330, 0, 420)
-Main.Position = UDim2.new(0.5, -165, 0.5, -210)
-Main.BackgroundColor3 = Color3.fromRGB(18, 55, 75)
+Main.Size = UDim2.new(0,280,0,300)
+Main.Position = UDim2.new(0.5,-140,0.5,-150)
+Main.BackgroundColor3 = Color3.fromRGB(15,25,30)
 Main.BorderSizePixel = 0
 Main.Parent = Gui
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 18)
-MainCorner.Parent = Main
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0,10)
+Corner.Parent = Main
 
-local MainStroke = Instance.new("UIStroke")
-MainStroke.Color = Color3.fromRGB(70, 215, 255)
-MainStroke.Thickness = 2
-MainStroke.Parent = Main
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(0,200,255)
+Stroke.Thickness = 2
+Stroke.Parent = Main
 
---==================================================
--- TITLE BAR
---==================================================
+--========================
+-- TOP BAR
+--========================
 
 local TopBar = Instance.new("Frame")
-TopBar.Size = UDim2.new(1, 0, 0, 65)
+TopBar.Size = UDim2.new(1,0,0,40)
 TopBar.BackgroundTransparency = 1
 TopBar.Parent = Main
 
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -120, 0, 35)
-Title.Position = UDim2.new(0, 18, 0, 5)
+Title.Size = UDim2.new(0,130,1,0)
+Title.Position = UDim2.new(0,10,0,0)
 Title.BackgroundTransparency = 1
 Title.Text = "AUTO BUY"
-Title.TextColor3 = Color3.fromRGB(130, 235, 255)
-Title.TextSize = 23
+Title.TextColor3 = Color3.fromRGB(0,220,255)
+Title.TextSize = 18
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TopBar
 
 local Credit = Instance.new("TextLabel")
-Credit.Size = UDim2.new(1, -120, 0, 22)
-Credit.Position = UDim2.new(0, 19, 0, 35)
+Credit.Size = UDim2.new(0,80,1,0)
+Credit.Position = UDim2.new(0,115,0,0)
 Credit.BackgroundTransparency = 1
 Credit.Text = "by Naeto"
-Credit.TextColor3 = Color3.fromRGB(180, 225, 240)
-Credit.TextSize = 12
+Credit.TextColor3 = Color3.fromRGB(180,220,230)
+Credit.TextSize = 11
 Credit.Font = Enum.Font.Gotham
-Credit.TextXAlignment = Enum.TextXAlignment.Left
 Credit.Parent = TopBar
 
---==================================================
--- MINIMIZE BUTTON
---==================================================
-
+-- Minimize
 local Minimize = Instance.new("TextButton")
-Minimize.Size = UDim2.new(0, 36, 0, 36)
-Minimize.Position = UDim2.new(1, -88, 0, 12)
-Minimize.BackgroundColor3 = Color3.fromRGB(35, 95, 120)
-Minimize.Text = "—"
-Minimize.TextColor3 = Color3.fromRGB(230, 250, 255)
-Minimize.TextSize = 22
-Minimize.Font = Enum.Font.GothamBold
+Minimize.Size = UDim2.new(0,30,0,30)
+Minimize.Position = UDim2.new(1,-65,0,5)
+Minimize.Text = "-"
+Minimize.TextSize = 20
+Minimize.TextColor3 = Color3.new(1,1,1)
+Minimize.BackgroundColor3 = Color3.fromRGB(35,80,100)
 Minimize.Parent = TopBar
 
-Instance.new("UICorner", Minimize).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner",Minimize).CornerRadius = UDim.new(0,6)
 
---==================================================
--- CLOSE BUTTON
---==================================================
-
+-- Close
 local Close = Instance.new("TextButton")
-Close.Size = UDim2.new(0, 36, 0, 36)
-Close.Position = UDim2.new(1, -45, 0, 12)
-Close.BackgroundColor3 = Color3.fromRGB(35, 95, 120)
-Close.Text = "×"
-Close.TextColor3 = Color3.fromRGB(230, 250, 255)
-Close.TextSize = 23
-Close.Font = Enum.Font.GothamBold
+Close.Size = UDim2.new(0,30,0,30)
+Close.Position = UDim2.new(1,-32,0,5)
+Close.Text = "X"
+Close.TextSize = 14
+Close.TextColor3 = Color3.new(1,1,1)
+Close.BackgroundColor3 = Color3.fromRGB(150,50,60)
 Close.Parent = TopBar
 
-Instance.new("UICorner", Close).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner",Close).CornerRadius = UDim.new(0,6)
 
---==================================================
--- DRAG SYSTEM
---==================================================
+--========================
+-- DRAG
+--========================
 
 local Dragging = false
 local DragStart
 local StartPosition
 
 TopBar.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
 
-	if Input.UserInputType == Enum.UserInputType.MouseButton1
-		or Input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = true
+        DragStart = Input.Position
+        StartPosition = Main.Position
 
-		Dragging = true
-		DragStart = Input.Position
-		StartPosition = Main.Position
-
-		Input.Changed:Connect(function()
-			if Input.UserInputState == Enum.UserInputState.End then
-				Dragging = false
-			end
-		end)
-	end
+        Input.Changed:Connect(function()
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+            end
+        end)
+    end
 end)
 
-UserInputService.InputChanged:Connect(function(Input)
+TopBar.InputChanged:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+    or Input.UserInputType == Enum.UserInputType.Touch then
 
-	if not Dragging then
-		return
-	end
+        if Dragging then
+            local Delta = Input.Position - DragStart
 
-	if Input.UserInputType ~= Enum.UserInputType.MouseMovement
-		and Input.UserInputType ~= Enum.UserInputType.Touch then
-		return
-	end
-
-	local Delta = Input.Position - DragStart
-
-	Main.Position = UDim2.new(
-		StartPosition.X.Scale,
-		StartPosition.X.Offset + Delta.X,
-		StartPosition.Y.Scale,
-		StartPosition.Y.Offset + Delta.Y
-	)
+            Main.Position = UDim2.new(
+                StartPosition.X.Scale,
+                StartPosition.X.Offset + Delta.X,
+                StartPosition.Y.Scale,
+                StartPosition.Y.Offset + Delta.Y
+            )
+        end
+    end
 end)
 
---==================================================
+--========================
 -- SELECTED RARITY
---==================================================
+--========================
 
-local Selected = Instance.new("TextLabel")
-Selected.Size = UDim2.new(1, -40, 0, 40)
-Selected.Position = UDim2.new(0, 20, 0, 72)
-Selected.BackgroundColor3 = Color3.fromRGB(28, 82, 108)
-Selected.Text = "เลือก: Common"
-Selected.TextColor3 = Color3.fromRGB(220, 250, 255)
-Selected.TextSize = 15
-Selected.Font = Enum.Font.GothamBold
-Selected.Parent = Main
+local SelectedText = Instance.new("TextLabel")
+SelectedText.Size = UDim2.new(1,-20,0,25)
+SelectedText.Position = UDim2.new(0,10,0,48)
+SelectedText.BackgroundTransparency = 1
+SelectedText.Text = "Selected : "..SelectedRarity
+SelectedText.TextColor3 = Color3.fromRGB(255,255,255)
+SelectedText.TextSize = 14
+SelectedText.Font = Enum.Font.GothamBold
+SelectedText.Parent = Main
 
-Instance.new("UICorner", Selected).CornerRadius = UDim.new(0, 10)
+--========================
+-- RARITY BUTTONS
+--========================
 
---==================================================
--- RARITY LIST
---==================================================
-
-local List = Instance.new("ScrollingFrame")
-List.Size = UDim2.new(1, -40, 0, 215)
-List.Position = UDim2.new(0, 20, 0, 120)
-List.BackgroundColor3 = Color3.fromRGB(13, 39, 53)
-List.BorderSizePixel = 0
-List.ScrollBarThickness = 5
-List.ScrollBarImageColor3 = Color3.fromRGB(70, 210, 250)
-List.CanvasSize = UDim2.new(0, 0, 0, 0)
-List.Parent = Main
-
-Instance.new("UICorner", List).CornerRadius = UDim.new(0, 12)
+local RarityFrame = Instance.new("Frame")
+RarityFrame.Size = UDim2.new(1,-20,0,55)
+RarityFrame.Position = UDim2.new(0,10,0,75)
+RarityFrame.BackgroundTransparency = 1
+RarityFrame.Parent = Main
 
 local Layout = Instance.new("UIListLayout")
-Layout.Padding = UDim.new(0, 5)
+Layout.FillDirection = Enum.FillDirection.Horizontal
 Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-Layout.Parent = List
+Layout.Padding = UDim.new(0,8)
+Layout.Parent = RarityFrame
 
-for _, Rarity in ipairs(Rarities) do
+for _,Rarity in ipairs(Rarities) do
 
-	local Button = Instance.new("TextButton")
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0,115,0,45)
+    Button.Text = Rarity
+    Button.TextSize = 14
+    Button.Font = Enum.Font.GothamBold
+    Button.TextColor3 = Color3.new(1,1,1)
+    Button.BackgroundColor3 = Color3.fromRGB(35,80,100)
+    Button.Parent = RarityFrame
 
-	Button.Size = UDim2.new(1, -10, 0, 32)
-	Button.BackgroundColor3 = Color3.fromRGB(32, 76, 96)
-	Button.Text = Rarity
-	Button.TextColor3 = Color3.fromRGB(220, 250, 255)
-	Button.TextSize = 14
-	Button.Font = Enum.Font.GothamBold
-	Button.AutoButtonColor = true
-	Button.Parent = List
+    Instance.new("UICorner",Button).CornerRadius = UDim.new(0,8)
 
-	Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 8)
+    Button.MouseButton1Click:Connect(function()
+        SelectedRarity = Rarity
+        SelectedText.Text = "Selected : "..SelectedRarity
 
-	Button.MouseButton1Click:Connect(function()
+        for _,v in ipairs(RarityFrame:GetChildren()) do
+            if v:IsA("TextButton") then
+                v.BackgroundColor3 = Color3.fromRGB(35,80,100)
+            end
+        end
 
-		SelectedRarity = Rarity
-		Selected.Text = "เลือก: " .. Rarity
-
-		-- ไฮไลต์ปุ่มที่เลือก
-		for _, OtherButton in ipairs(List:GetChildren()) do
-			if OtherButton:IsA("TextButton") then
-				OtherButton.BackgroundColor3 =
-					Color3.fromRGB(32, 76, 96)
-			end
-		end
-
-		Button.BackgroundColor3 =
-			Color3.fromRGB(25, 165, 210)
-	end)
+        Button.BackgroundColor3 = Color3.fromRGB(0,170,220)
+    end)
 end
 
-Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+--========================
+-- AUTO BUY
+--========================
 
-	List.CanvasSize = UDim2.new(
-		0,
-		0,
-		0,
-		Layout.AbsoluteContentSize.Y + 10
-	)
-end)
+local BuyToggle = Instance.new("TextButton")
+BuyToggle.Size = UDim2.new(1,-20,0,42)
+BuyToggle.Position = UDim2.new(0,10,0,140)
+BuyToggle.Text = "AUTO BUY : OFF"
+BuyToggle.TextColor3 = Color3.new(1,1,1)
+BuyToggle.TextSize = 14
+BuyToggle.Font = Enum.Font.GothamBold
+BuyToggle.BackgroundColor3 = Color3.fromRGB(35,80,100)
+BuyToggle.Parent = Main
 
---==================================================
--- AUTO BUY BUTTON
---==================================================
+Instance.new("UICorner",BuyToggle).CornerRadius = UDim.new(0,8)
 
-local Toggle = Instance.new("TextButton")
-Toggle.Size = UDim2.new(1, -40, 0, 45)
-Toggle.Position = UDim2.new(0, 20, 1, -60)
-Toggle.BackgroundColor3 = Color3.fromRGB(35, 80, 100)
-Toggle.Text = "AUTO BUY : OFF"
-Toggle.TextColor3 = Color3.fromRGB(220, 250, 255)
-Toggle.TextSize = 15
-Toggle.Font = Enum.Font.GothamBold
-Toggle.Parent = Main
+BuyToggle.MouseButton1Click:Connect(function()
 
-Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 12)
+    AutoBuy = not AutoBuy
 
-Toggle.MouseButton1Click:Connect(function()
-
-	AutoBuy = not AutoBuy
-
-	if AutoBuy then
-
-		Toggle.Text = "AUTO BUY : ON"
-		Toggle.BackgroundColor3 =
-			Color3.fromRGB(20, 170, 215)
-
-	else
-
-		Toggle.Text = "AUTO BUY : OFF"
-		Toggle.BackgroundColor3 =
-			Color3.fromRGB(35, 80, 100)
-
-	end
-end)
-
---==================================================
--- MINIMIZE
---==================================================
-
-Minimize.MouseButton1Click:Connect(function()
-
-	Minimized = not Minimized
-
-	if Minimized then
-
-		Main.Size = UDim2.new(0, 330, 0, 65)
-
-		Selected.Visible = false
-		List.Visible = false
-		Toggle.Visible = false
-
-		Minimize.Text = "+"
-
-	else
-
-		Main.Size = UDim2.new(0, 330, 0, 420)
-
-		Selected.Visible = true
-		List.Visible = true
-		Toggle.Visible = true
-
-		Minimize.Text = "—"
-
-	end
-end)
-
---==================================================
--- CLOSE / OPEN
---==================================================
-
-local Open = Instance.new("TextButton")
-
-Open.Size = UDim2.new(0, 115, 0, 42)
-Open.Position = UDim2.new(0, 15, 0.5, -21)
-Open.BackgroundColor3 = Color3.fromRGB(25, 160, 210)
-Open.Text = "Naeto GUI"
-Open.TextColor3 = Color3.fromRGB(255, 255, 255)
-Open.TextSize = 14
-Open.Font = Enum.Font.GothamBold
-Open.Visible = false
-Open.Parent = Gui
-
-Instance.new("UICorner", Open).CornerRadius = UDim.new(0, 12)
-
-Close.MouseButton1Click:Connect(function()
-
-	Main.Visible = false
-	Open.Visible = true
+    if AutoBuy then
+        BuyToggle.Text = "AUTO BUY : ON"
+        BuyToggle.BackgroundColor3 = Color3.fromRGB(20,170,215)
+    else
+        BuyToggle.Text = "AUTO BUY : OFF"
+        BuyToggle.BackgroundColor3 = Color3.fromRGB(35,80,100)
+    end
 
 end)
 
-Open.MouseButton1Click:Connect(function()
+--========================
+-- AUTO SPAWN CASE
+--========================
 
-	Main.Visible = true
-	Open.Visible = false
+local SpawnToggle = Instance.new("TextButton")
+SpawnToggle.Size = UDim2.new(1,-20,0,42)
+SpawnToggle.Position = UDim2.new(0,10,0,190)
+SpawnToggle.Text = "AUTO SPAWN CASE : OFF"
+SpawnToggle.TextColor3 = Color3.new(1,1,1)
+SpawnToggle.TextSize = 14
+SpawnToggle.Font = Enum.Font.GothamBold
+SpawnToggle.BackgroundColor3 = Color3.fromRGB(35,80,100)
+SpawnToggle.Parent = Main
+
+Instance.new("UICorner",SpawnToggle).CornerRadius = UDim.new(0,8)
+
+SpawnToggle.MouseButton1Click:Connect(function()
+
+    AutoSpawnCase = not AutoSpawnCase
+
+    if AutoSpawnCase then
+        SpawnToggle.Text = "AUTO SPAWN CASE : ON"
+        SpawnToggle.BackgroundColor3 = Color3.fromRGB(20,170,215)
+    else
+        SpawnToggle.Text = "AUTO SPAWN CASE : OFF"
+        SpawnToggle.BackgroundColor3 = Color3.fromRGB(35,80,100)
+    end
 
 end)
 
---==================================================
--- RARITY CHECK
---==================================================
+--========================
+-- CASE CHECK
+--========================
 
 local function GetRarityIndex(Rarity)
 
-	for Index, Value in ipairs(Rarities) do
+    for i,v in ipairs(Rarities) do
+        if v == Rarity then
+            return i
+        end
+    end
 
-		if Value == Rarity then
-			return Index
-		end
-
-	end
-
-	return nil
+    return nil
 end
 
 local function ShouldBuy(Rarity)
 
-	local SelectedIndex = GetRarityIndex(SelectedRarity)
-	local CaseIndex = GetRarityIndex(Rarity)
+    local SelectedIndex = GetRarityIndex(SelectedRarity)
+    local CaseIndex = GetRarityIndex(Rarity)
 
-	if not SelectedIndex or not CaseIndex then
-		return false
-	end
+    if not SelectedIndex or not CaseIndex then
+        return false
+    end
 
-	return CaseIndex >= SelectedIndex
+    -- Azure = ซื้อ Azure + Void
+    -- Void = ซื้อ Void เท่านั้น
+    return CaseIndex >= SelectedIndex
 end
 
-print("Naeto GUI Loaded")
-print("Selected Rarity:", SelectedRarity)
+--========================
+-- AUTO SPAWN
+--========================
+
+task.spawn(function()
+
+    while task.wait(1) do
+
+        if AutoSpawnCase then
+
+            if SpawnCase then
+                SpawnCase:FireServer()
+            else
+                warn("Naeto: ไม่พบ RemoteEvent 'SpawnCase'")
+            end
+
+        end
+
+    end
+
+end)
+
+--========================
+-- AUTO BUY
+--========================
+
+task.spawn(function()
+
+    while task.wait(0.3) do
+
+        if AutoBuy then
+
+            for CaseName,Data in pairs(Cases) do
+
+                if ShouldBuy(Data.Rarity) then
+
+                    local CaseObject = workspace:FindFirstChild(CaseName,true)
+
+                    if CaseObject and BuyCase then
+
+                        BuyCase:FireServer(CaseObject)
+
+                    end
+
+                end
+
+            end
+
+        end
+
+    end
+
+end)
+
+--========================
+-- SHOW / HIDE
+--========================
+
+local OpenButton = Instance.new("TextButton")
+OpenButton.Size = UDim2.new(0,55,0,35)
+OpenButton.Position = UDim2.new(0,10,0.5,-17)
+OpenButton.Text = "OPEN"
+OpenButton.TextColor3 = Color3.new(1,1,1)
+OpenButton.TextSize = 12
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.BackgroundColor3 = Color3.fromRGB(0,150,200)
+OpenButton.Visible = false
+OpenButton.Parent = Gui
+
+Instance.new("UICorner",OpenButton).CornerRadius = UDim.new(0,8)
+
+Close.MouseButton1Click:Connect(function()
+    Main.Visible = false
+    OpenButton.Visible = true
+end)
+
+Minimize.MouseButton1Click:Connect(function()
+
+    local Current = not Main:GetAttribute("Minimized")
+    Main:SetAttribute("Minimized",Current)
+
+    if Current then
+        Main.Size = UDim2.new(0,280,0,40)
+
+        for _,v in ipairs(Main:GetChildren()) do
+            if v ~= TopBar then
+                v.Visible = false
+            end
+        end
+
+    else
+        Main.Size = UDim2.new(0,280,0,300)
+
+        for _,v in ipairs(Main:GetChildren()) do
+            v.Visible = true
+        end
+    end
+
+end)
+
+OpenButton.MouseButton1Click:Connect(function()
+    Main.Visible = true
+    OpenButton.Visible = false
+end)
+
+--========================
+-- CASE PRICE INFO
+--========================
+
+for Name,Data in pairs(Cases) do
+    print(Name.." | "..Data.Rarity.." | Price: "..Data.Price)
+end
+
+print("Naeto Auto Buy Loaded")
